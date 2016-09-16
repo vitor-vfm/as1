@@ -11,6 +11,8 @@ import java.util.List;
  */
 public class Weekday {
 
+    public static final List<Weekday> allWeekdays = allWeekdays();
+
     private static List<Weekday> allWeekdays() {
         final List<Weekday> result = new ArrayList<>();
         for (int day = Calendar.SUNDAY; day <= Calendar.SATURDAY; day++) {
@@ -19,15 +21,13 @@ public class Weekday {
         return result;
     }
 
-    public static final List<Weekday> allWeekdays = allWeekdays();
-
     public static boolean isValid(int possibleValue) {
         return Calendar.SUNDAY <= possibleValue && possibleValue <= Calendar.SATURDAY;
     }
 
     final int value;
 
-    public Weekday(int value) {
+    private Weekday(int value) {
         if (!isValid(value))
             throw new InvalidParameterException("Integer " + value + " out of bounds");
 
