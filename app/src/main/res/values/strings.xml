@@ -1,5 +1,10 @@
 <resources>
-    <string name="app_name">HabitTracker</string>
+    <string name="app_name">mendona-HabitTracker</string>
     <string name="appwidget_text">EXAMPLE</string>
-    <string name="add_widget">Add widget</string>
+    <string name="add_habit">Add habit</string>
+
+    <string name="add_habit_date_hint">Original Date</string>
+    <string name="add_habit_name_hint">Habit Name</string>
+    <string name="add_habit_weekday_hint">Days of the week (Su, Mo, Tu, We, Th, Fr, Sa)</string>
+
 </resources>

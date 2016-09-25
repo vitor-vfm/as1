@@ -30,7 +30,7 @@ public class HabitList extends Activity {
 
         currentDate = new Date(SystemClock.currentThreadTimeMillis());
         calendar = Calendar.getInstance();
-        calendarManager = new AbstractCalendarManager(calendar);
+        calendarManager = new AbstractCalendarManager(calendar, this);
         habitsForDate = calendarManager.getHabitsForDate(currentDate);
         habitsOnScreen = new ArrayList<String>();
         adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, habitsOnScreen);

@@ -1,9 +1,12 @@
 package mendona.vitor.habittracker;
 
+import android.content.Context;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -27,16 +30,18 @@ public class AbstractCalendarManager implements CalendarManager {
 
     final Map<Weekday, Set<Habit>> habitsInWeekday;
     final Calendar calendar;
+    final Context context;
 
     final Map<Date, Map<Habit, List<Completion>>> cache;
 
-    public AbstractCalendarManager(final Calendar calendar) {
+    public AbstractCalendarManager(final Calendar calendar, final Context context) {
 
         this.completions = new ArrayList<Completion>();
         this.habits = new HashSet<Habit>();
         this.datesRecorded = new HashSet<Date>();
         this.cache = new HashMap<Date, Map<Habit, List<Completion>>>();
         this.calendar = calendar;
+        this.context = context;
 
         loadDataFromFile();
 
@@ -149,18 +154,26 @@ public class AbstractCalendarManager implements CalendarManager {
         try {
             Gson gson = new Gson();
 
-            FileInputStream habitFis = new FileInputStream(HABIT_FILENAME);
-            BufferedReader habitIn = new BufferedReader(new InputStreamReader(habitFis));
-            Type habitType = new TypeToken<Set<Habit>>(){}.getType();
-            habits.addAll(gson.<Set<Habit>>fromJson(habitIn, habitType));
+            File habitFile = context.getFileStreamPath(HABIT_FILENAME);
+            if (habitFile != null && habitFile.exists()) {
+                FileInputStream habitFis = context.openFileInput(HABIT_FILENAME);
+                BufferedReader habitIn = new BufferedReader(new InputStreamReader(habitFis));
+                Type habitType = new TypeToken<Set<Habit>>() {
+                }.getType();
+                habits.addAll(gson.<Set<Habit>>fromJson(habitIn, habitType));
+            }
 
-            FileInputStream completionFis = new FileInputStream(COMPLETION_FILENAME);
-            BufferedReader completionIn = new BufferedReader(new InputStreamReader(completionFis));
-            Type completionType = new TypeToken<List<Completion>>(){}.getType();
-            completions.addAll(gson.<List<Completion>>fromJson(completionIn, completionType));
+            File completionFile = context.getFileStreamPath(COMPLETION_FILENAME);
+            if (completionFile != null && completionFile.exists()) {
+                FileInputStream completionFis = context.openFileInput(COMPLETION_FILENAME);
+                BufferedReader completionIn = new BufferedReader(new InputStreamReader(completionFis));
+                Type completionType = new TypeToken<List<Completion>>() {
+                }.getType();
+                completions.addAll(gson.<List<Completion>>fromJson(completionIn, completionType));
+            }
 
         } catch (FileNotFoundException e) {
-            throw new RuntimeException();
+            throw new RuntimeException(e.getMessage());
         }
 
     }
@@ -168,7 +181,7 @@ public class AbstractCalendarManager implements CalendarManager {
     @Override
     public void saveHabits() {
         try {
-            FileOutputStream fos = new FileOutputStream(HABIT_FILENAME, false);
+            FileOutputStream fos = context.openFileOutput(HABIT_FILENAME, 0);
             OutputStreamWriter writer = new OutputStreamWriter(fos);
             Gson gson = new Gson();
             gson.toJson(habits, writer);
