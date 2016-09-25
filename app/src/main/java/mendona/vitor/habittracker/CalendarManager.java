@@ -22,4 +22,8 @@ public interface CalendarManager {
 
     int timesHabitUnfulfilled(Habit habit);
 
+    void saveHabits();
+
+    void saveCompletions();
+
 }
