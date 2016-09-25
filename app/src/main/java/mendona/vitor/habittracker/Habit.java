@@ -2,24 +2,28 @@ package mendona.vitor.habittracker;
 
 import java.security.InvalidParameterException;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Habit {
 
+    // Represents a habit. This class should be immutable
+
     private final String name;
     private final Date originalDate;
-    private final Weekday weekday;
+    private final Set<Weekday> weekdays;
 
-    public Habit(final String name, final Date originalDate, final Weekday weekday) {
+    public Habit(final String name, final Date originalDate, final Set<Weekday> weekdays) {
         if (name == null)
             throw new InvalidParameterException("name is null");
         if (originalDate == null)
             throw new InvalidParameterException("originalDate is null");
-        if (weekday == null)
-            throw new InvalidParameterException("weekday is null");
+        if (weekdays == null)
+            throw new InvalidParameterException("weekdays is null");
 
         this.name = name;
         this.originalDate = originalDate;
-        this.weekday = weekday;
+        this.weekdays = weekdays;
     }
 
     public String getName() {
@@ -30,8 +34,8 @@ public class Habit {
         return (Date) originalDate.clone();
     }
 
-    public Weekday getWeekday() {
-        return weekday;
+    public Set<Weekday> getWeekdays() {
+        return new HashSet<>(weekdays);
     }
 
     @Override
@@ -41,7 +45,7 @@ public class Habit {
 
         Habit habit = (Habit) o;
 
-        if (!weekday.equals(habit.weekday)) return false;
+        if (!weekdays.equals(habit.weekdays)) return false;
         if (!name.equals(habit.name)) return false;
         return originalDate.equals(habit.originalDate);
 
@@ -51,7 +55,7 @@ public class Habit {
     public int hashCode() {
         int result = name.hashCode();
         result = 31 * result + originalDate.hashCode();
-        result = 31 * result + weekday.hashCode();
+        result = 31 * result + weekdays.hashCode();
         return result;
     }
 }

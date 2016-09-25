@@ -49,7 +49,8 @@ public class AbstractCalendarManager implements CalendarManager {
         for (Weekday weekday : Weekday.values())
             habitsInWeekday.put(weekday, new HashSet<Habit>());
         for (Habit habit : habits)
-            habitsInWeekday.get(habit.getWeekday()).add(habit);
+            for (Weekday weekday : habit.getWeekdays())
+                habitsInWeekday.get(weekday).add(habit);
 
     }
 
@@ -99,17 +100,21 @@ public class AbstractCalendarManager implements CalendarManager {
     @Override
     public void addHabit(Habit habit) {
         habits.add(habit);
-        habitsInWeekday.get(habit.getWeekday()).add(habit);
+        for (Weekday weekday : habit.getWeekdays())
+            habitsInWeekday.get(weekday).add(habit);
 
         clearCache(habit);
+        saveHabits();
     }
 
     @Override
     public void deleteHabit(Habit habit) {
         habits.remove(habit);
-        habitsInWeekday.get(habit.getWeekday()).remove(habit);
+        for (Weekday weekday : habit.getWeekdays())
+            habitsInWeekday.get(weekday).remove(habit);
 
         clearCache(habit);
+        saveHabits();
     }
 
     @Override
@@ -118,6 +123,7 @@ public class AbstractCalendarManager implements CalendarManager {
         completions.add(completion);
 
         clearCache(date);
+        saveCompletions();
     }
 
     @Override
@@ -126,6 +132,7 @@ public class AbstractCalendarManager implements CalendarManager {
         completions.remove(completion);
 
         clearCache(date);
+        saveCompletions();
     }
 
     @Override
@@ -187,10 +194,8 @@ public class AbstractCalendarManager implements CalendarManager {
             gson.toJson(habits, writer);
             writer.flush();
         } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
              throw new RuntimeException();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
              throw new RuntimeException();
         }
     }
@@ -204,10 +209,8 @@ public class AbstractCalendarManager implements CalendarManager {
             gson.toJson(completions, writer);
             writer.flush();
         } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
             throw new RuntimeException();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             throw new RuntimeException();
         }
     }
