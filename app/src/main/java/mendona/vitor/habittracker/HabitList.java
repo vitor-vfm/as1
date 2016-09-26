@@ -6,6 +6,8 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -39,10 +41,11 @@ public class HabitList extends Activity {
         currentDate = new Date(calendar.getTimeInMillis());
         calendarManager = new AbstractCalendarManager(calendar, this);
         habitsOnScreen = new ArrayList<String>();
-        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, habitsOnScreen);
+        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_multiple_choice, habitsOnScreen);
 
         ListView habitListView = (ListView) findViewById(R.id.habit_list);
         habitListView.setAdapter(adapter);
+        habitListView.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
 
         Button addHabitButton = (Button) findViewById(R.id.add_habit_button);
         addHabitButton.setOnClickListener(new View.OnClickListener() {
@@ -79,7 +82,7 @@ public class HabitList extends Activity {
 
     private void reloadHabitsOnScreen() {
         habitsOnScreen.clear();
-        final Map<Habit, Integer> habitsForDate = calendarManager.getHabitsForDate(currentDate);
+        final Map<Habit, List<Completion>> habitsForDate = calendarManager.getHabitsForDate(currentDate);
         for (final Habit habit : habitsForDate.keySet()) {
             habitsOnScreen.add(habit.getName());
         }

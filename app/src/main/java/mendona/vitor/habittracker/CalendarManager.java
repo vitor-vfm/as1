@@ -1,14 +1,18 @@
 package mendona.vitor.habittracker;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by vitor on 15/09/16.
  */
 public interface CalendarManager {
 
-    Map<Habit, Integer> getHabitsForDate(Date calendar);
+    Map<Habit, List<Completion>> getHabitsForDate(Date calendar);
+
+    Set<Habit> getAllHabits();
 
     void addHabit(Habit habit);
 

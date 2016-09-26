@@ -73,35 +73,37 @@ public class AbstractCalendarManager implements CalendarManager {
     }
 
     @Override
-    public Map<Habit, Integer> getHabitsForDate(Date date) {
+    public Map<Habit, List<Completion>> getHabitsForDate(Date date) {
         return getHabitsForDate(simpleDateFormat.format(date), Weekday.fromDate(date, calendar));
     }
 
-    private Map<Habit, Integer> getHabitsForDate(final String date, final Weekday weekday) {
+    private Map<Habit, List<Completion>> getHabitsForDate(final String date, final Weekday weekday) {
 
         if (!cache.containsKey(date)) {
             datesRecorded.add(date);
             buildResultForDate(date, weekday);
         }
 
-        final Map<Habit, Integer> result = new HashMap<Habit, Integer>();
-        for (Map.Entry<Habit, List<Completion>> entry : cache.get(date).entrySet())
-            result.put(entry.getKey(), entry.getValue().size());
-        return result;
+        return cache.get(date);
     }
 
-    private void clearCache(Habit habit) {
-        final Set<String> datesInvalid = new HashSet<>();
-
-        for (String date : cache.keySet())
-            if (cache.get(date).containsKey(habit))
-                datesInvalid.add(date);
-
-        cache.keySet().removeAll(datesInvalid);
-    }
+//    private void clearCache(Habit habit) {
+//        final Set<String> datesInvalid = new HashSet<>();
+//
+//        for (String date : cache.keySet())
+//            if (cache.get(date).containsKey(habit))
+//                datesInvalid.add(date);
+//
+//        cache.keySet().removeAll(datesInvalid);
+//    }
 
     private void clearCache(String date) {
         cache.keySet().remove(date);
+    }
+
+    @Override
+    public Set<Habit> getAllHabits() {
+        return habits;
     }
 
     @Override
@@ -110,7 +112,7 @@ public class AbstractCalendarManager implements CalendarManager {
         for (Weekday weekday : habit.getWeekdays())
             habitsInWeekday.get(weekday).add(habit);
 
-        clearCache(habit);
+        cache.clear();
         saveHabits();
     }
 
@@ -120,7 +122,7 @@ public class AbstractCalendarManager implements CalendarManager {
         for (Weekday weekday : habit.getWeekdays())
             habitsInWeekday.get(weekday).remove(habit);
 
-        clearCache(habit);
+        cache.clear();
         saveHabits();
     }
 
