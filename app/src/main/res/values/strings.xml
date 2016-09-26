@@ -3,8 +3,11 @@
     <string name="appwidget_text">EXAMPLE</string>
     <string name="add_habit">Add habit</string>
 
-    <string name="add_habit_date_hint">Original Date</string>
+    <string name="add_habit_date_hint">Original Date (dd-MM-yyyy)</string>
     <string name="add_habit_name_hint">Habit Name</string>
     <string name="add_habit_weekday_hint">Days of the week (Su, Mo, Tu, We, Th, Fr, Sa)</string>
 
+    <string name="add_habit_dialog_title">Please input information about the new habit</string>
+
+    <string name="add_habit_OK_button_text">Done</string>
 </resources>

@@ -19,6 +19,7 @@
     </ListView>
 
     <Button
+        android:id="@+id/add_habit_button"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="0"
