@@ -8,9 +8,9 @@ import java.util.Date;
  */
 public class Completion {
     private Habit habit;
-    private Date date;
+    private String date; // dd-MM-yyyy
 
-    public Completion(final Habit habit, final Date date) {
+    public Completion(final Habit habit, final String date) {
         if (habit == null)
             throw new InvalidParameterException("Habit is null");
         if (date == null)
@@ -24,8 +24,8 @@ public class Completion {
         return habit;
     }
 
-    public Date getDate() {
-        return (Date) date.clone();
+    public String getDate() {
+        return date;
     }
 
     @Override

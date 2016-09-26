@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.Type;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -26,20 +27,22 @@ public class AbstractCalendarManager implements CalendarManager {
 
     final List<Completion> completions;
     final Set<Habit> habits;
-    final Set<Date> datesRecorded;
+    final Set<String> datesRecorded;
 
     final Map<Weekday, Set<Habit>> habitsInWeekday;
     final Calendar calendar;
     final Context context;
+    final SimpleDateFormat simpleDateFormat;
 
-    final Map<Date, Map<Habit, List<Completion>>> cache;
+    final Map<String, Map<Habit, List<Completion>>> cache;
 
     public AbstractCalendarManager(final Calendar calendar, final Context context) {
 
         this.completions = new ArrayList<Completion>();
         this.habits = new HashSet<Habit>();
-        this.datesRecorded = new HashSet<Date>();
-        this.cache = new HashMap<Date, Map<Habit, List<Completion>>>();
+        this.datesRecorded = new HashSet<String>();
+        this.simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy", context.getResources().getConfiguration().locale);
+        this.cache = new HashMap<String, Map<Habit, List<Completion>>>();
         this.calendar = calendar;
         this.context = context;
 
@@ -54,27 +57,31 @@ public class AbstractCalendarManager implements CalendarManager {
 
     }
 
-    private void buildResultForDate(Date date) {
-        final Set<Habit> habitsForDate = habitsInWeekday.get(Weekday.fromDate(date, calendar));
+    private void buildResultForDate(final String date, final Weekday weekday) {
         final Map<Habit, List<Completion>> entry = new HashMap<Habit, List<Completion>>();
+
+        for (Habit habit : habitsInWeekday.get(weekday)) {
+            entry.put(habit, new ArrayList<Completion>());
+        }
 
         for (Completion completion : completions) {
             if (entry.containsKey(completion.getHabit()))
                 entry.get(completion.getHabit()).add(completion);
-            else
-                entry.put(completion.getHabit(), new ArrayList<Completion>());
         }
-
-        entry.keySet().retainAll(habitsForDate);
 
         cache.put(date, entry);
     }
 
     @Override
     public Map<Habit, Integer> getHabitsForDate(Date date) {
+        return getHabitsForDate(simpleDateFormat.format(date), Weekday.fromDate(date, calendar));
+    }
+
+    private Map<Habit, Integer> getHabitsForDate(final String date, final Weekday weekday) {
+
         if (!cache.containsKey(date)) {
             datesRecorded.add(date);
-            buildResultForDate(date);
+            buildResultForDate(date, weekday);
         }
 
         final Map<Habit, Integer> result = new HashMap<Habit, Integer>();
@@ -84,16 +91,16 @@ public class AbstractCalendarManager implements CalendarManager {
     }
 
     private void clearCache(Habit habit) {
-        final Set<Date> datesInvalid = new HashSet<Date>();
+        final Set<String> datesInvalid = new HashSet<>();
 
-        for (Date date : cache.keySet())
+        for (String date : cache.keySet())
             if (cache.get(date).containsKey(habit))
                 datesInvalid.add(date);
 
         cache.keySet().removeAll(datesInvalid);
     }
 
-    private void clearCache(Date date) {
+    private void clearCache(String date) {
         cache.keySet().remove(date);
     }
 
@@ -119,42 +126,46 @@ public class AbstractCalendarManager implements CalendarManager {
 
     @Override
     public void addCompletion(Habit habit, Date date) {
-        final Completion completion = new Completion(habit, date);
+        final String formattedDate = simpleDateFormat.format(date);
+        final Completion completion = new Completion(habit, formattedDate);
         completions.add(completion);
 
-        clearCache(date);
+        clearCache(formattedDate);
         saveCompletions();
     }
 
     @Override
     public void deleteCompletion(Habit habit, Date date) {
-        final Completion completion = new Completion(habit, date);
+        final String formattedDate = simpleDateFormat.format(date);
+        final Completion completion = new Completion(habit, formattedDate);
         completions.remove(completion);
 
-        clearCache(date);
+        clearCache(formattedDate);
         saveCompletions();
     }
 
     @Override
     public int timesHabitFulfilled(Habit habit) {
-        int timesFulfilled = 0;
-        for (Date date : datesRecorded) {
-            final Integer completionsInDate = getHabitsForDate(date).get(habit);
-            if (completionsInDate != null && completionsInDate > 0)
-                timesFulfilled++;
-        }
-        return timesFulfilled;
+//        int timesFulfilled = 0;
+//        for (String date : datesRecorded) {
+//            final Integer completionsInDate = getHabitsForDate(date).get(habit);
+//            if (completionsInDate != null && completionsInDate > 0)
+//                timesFulfilled++;
+//        }
+//        return timesFulfilled;
+        return 0;
     }
 
     @Override
     public int timesHabitUnfulfilled(Habit habit) {
-        int timesUnfulfilled = 0;
-        for (Date date : datesRecorded) {
-            final Integer completionsInDate = getHabitsForDate(date).get(habit);
-            if (completionsInDate != null && completionsInDate == 0)
-                timesUnfulfilled++;
-        }
-        return timesUnfulfilled;
+//        int timesUnfulfilled = 0;
+//        for (String date : datesRecorded) {
+//            final Integer completionsInDate = getHabitsForDate(date).get(habit);
+//            if (completionsInDate != null && completionsInDate == 0)
+//                timesUnfulfilled++;
+//        }
+//        return timesUnfulfilled;
+        return 0;
     }
 
     private void loadDataFromFile() {

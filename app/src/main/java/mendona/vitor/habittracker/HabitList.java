@@ -2,9 +2,7 @@ package mendona.vitor.habittracker;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.DialogInterface;
-import android.os.SystemClock;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,8 +11,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -30,7 +26,6 @@ public class HabitList extends Activity {
     protected CalendarManager calendarManager;
     private Calendar calendar;
     private Date currentDate;
-    private Map<Habit, Integer> habitsForDate;
 
     private List<String> habitsOnScreen;
     private ArrayAdapter<String> adapter;
@@ -43,7 +38,6 @@ public class HabitList extends Activity {
         calendar = Calendar.getInstance();
         currentDate = new Date(calendar.getTimeInMillis());
         calendarManager = new AbstractCalendarManager(calendar, this);
-        habitsForDate = calendarManager.getHabitsForDate(currentDate);
         habitsOnScreen = new ArrayList<String>();
         adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, habitsOnScreen);
 
@@ -85,7 +79,7 @@ public class HabitList extends Activity {
 
     private void reloadHabitsOnScreen() {
         habitsOnScreen.clear();
-        habitsForDate = calendarManager.getHabitsForDate(currentDate);
+        final Map<Habit, Integer> habitsForDate = calendarManager.getHabitsForDate(currentDate);
         for (final Habit habit : habitsForDate.keySet()) {
             habitsOnScreen.add(habit.getName());
         }
@@ -106,22 +100,13 @@ public class HabitList extends Activity {
     }
 
     protected Habit createHabit(final String name, final String originalDate, final String weekdays) {
-
-        try {
-            final SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy", getResources().getConfiguration().locale);
-            final Date habitOriginalDate = sdf.parse(originalDate);
-
-            final Set<Weekday> habitWeekdays = new HashSet<>();
-            for (String word : weekdays.split(" ")) {
-                final Weekday weekday = weekdayInputTranslator.get(word.toUpperCase());
-                if (weekday != null) {
-                    habitWeekdays.add(weekday);
-                }
+        final Set<Weekday> habitWeekdays = new HashSet<>();
+        for (String word : weekdays.split(" ")) {
+            final Weekday weekday = weekdayInputTranslator.get(word.toUpperCase());
+            if (weekday != null) {
+                habitWeekdays.add(weekday);
             }
-            return new Habit(name, habitOriginalDate, habitWeekdays);
-        } catch (ParseException pe) {
-            throw new RuntimeException("Could not create habit: " + pe.getMessage());
         }
-
+        return new Habit(name, originalDate, habitWeekdays);
     }
 }

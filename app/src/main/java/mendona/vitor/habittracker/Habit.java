@@ -1,8 +1,11 @@
 package mendona.vitor.habittracker;
 
 import java.security.InvalidParameterException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 public class Habit {
@@ -10,10 +13,10 @@ public class Habit {
     // Represents a habit. This class should be immutable
 
     private final String name;
-    private final Date originalDate;
+    private final String originalDate; // dd-MM-yyyy
     private final Set<Weekday> weekdays;
 
-    public Habit(final String name, final Date originalDate, final Set<Weekday> weekdays) {
+    public Habit(final String name, final String originalDate, final Set<Weekday> weekdays) {
         if (name == null)
             throw new InvalidParameterException("name is null");
         if (originalDate == null)
@@ -30,8 +33,8 @@ public class Habit {
         return name;
     }
 
-    public Date getOriginalDate() {
-        return (Date) originalDate.clone();
+    public String getOriginalDate() {
+        return originalDate;
     }
 
     public Set<Weekday> getWeekdays() {
@@ -57,5 +60,15 @@ public class Habit {
         result = 31 * result + originalDate.hashCode();
         result = 31 * result + weekdays.hashCode();
         return result;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder builder = new StringBuilder();
+        builder.append(name);
+        for (Weekday weekday : weekdays) {
+            builder.append(weekday);
+        }
+        return builder.toString();
     }
 }
