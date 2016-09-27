@@ -23,10 +23,19 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:text="@string/see_completions"/>
+
     <Button
         android:id="@+id/add_habit_button"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="0"
         android:text="@string/add_habit"/>
+
+    <Button
+        android:id="@+id/delete_habit_button"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="@string/delete_habit"/>
+
+
 </LinearLayout>

@@ -65,7 +65,7 @@ public class AbstractCalendarManager implements CalendarManager {
         }
 
         for (Completion completion : completions) {
-            if (entry.containsKey(completion.getHabit()))
+            if (entry.containsKey(completion.getHabit()) && completion.getDate().equals(date))
                 entry.get(completion.getHabit()).add(completion);
         }
 
@@ -99,6 +99,18 @@ public class AbstractCalendarManager implements CalendarManager {
     }
 
     @Override
+    public Habit getHabitByName(String habitName) {
+
+        for (Habit habit: habits) {
+            if (habit.getName().equals(habitName)) {
+                return habit;
+            }
+        }
+
+        return null;
+    }
+
+    @Override
     public List<Completion> getCompletionsForHabit(String habitName) {
         final List<Completion> result = new ArrayList<>();
         for (Completion completion : completions) {
@@ -121,8 +133,15 @@ public class AbstractCalendarManager implements CalendarManager {
     @Override
     public void deleteHabit(Habit habit) {
         habits.remove(habit);
-        for (Weekday weekday : habit.getWeekdays())
+
+        for (Weekday weekday : habit.getWeekdays()) {
             habitsInWeekday.get(weekday).remove(habit);
+        }
+
+        for (Completion completion : completions) {
+            if (completion.getHabit().equals(habit))
+                completions.remove(completion);
+        }
 
         cache.clear();
         saveHabits();
@@ -139,12 +158,10 @@ public class AbstractCalendarManager implements CalendarManager {
     }
 
     @Override
-    public void deleteCompletion(Habit habit, Date date) {
-        final String formattedDate = simpleDateFormat.format(date);
-        final Completion completion = new Completion(habit, formattedDate);
+    public void deleteCompletion(Completion completion) {
         completions.remove(completion);
 
-        clearCache(formattedDate);
+        clearCache(completion.getDate());
         saveCompletions();
     }
 

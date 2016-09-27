@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AbsListView;
@@ -13,7 +12,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -22,7 +20,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,7 +30,7 @@ public class HabitList extends Activity {
     private Date currentDate;
 
     private ArrayList<HabitOnScreen> habitsOnScreen;
-    private HabitListAdapter adapter;
+    private HabitsOnScreenAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +41,7 @@ public class HabitList extends Activity {
         currentDate = new Date(calendar.getTimeInMillis());
         calendarManager = new AbstractCalendarManager(calendar, this);
         habitsOnScreen = new ArrayList<>();
-        adapter = new HabitListAdapter(this, habitsOnScreen);
+        adapter = new HabitsOnScreenAdapter(this, habitsOnScreen);
 
         final ListView habitListView = (ListView) findViewById(R.id.habit_list);
         habitListView.setAdapter(adapter);
@@ -86,7 +83,7 @@ public class HabitList extends Activity {
                 final EditText weekdaysView = (EditText) dialogView.findViewById(R.id.add_habit_weekday);
                 builder.setView(dialogView);
                 builder.setTitle(R.string.add_habit_dialog_title);
-                builder.setPositiveButton(R.string.add_habit_OK_button_text, new DialogInterface.OnClickListener() {
+                builder.setPositiveButton(R.string.done, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         final Habit newHabit = createHabit(nameView.getText().toString(), dateView.getText().toString(), weekdaysView.getText().toString());
@@ -111,26 +108,44 @@ public class HabitList extends Activity {
                 final ArrayAdapter<String> habitsToShowAdapter = new ArrayAdapter<String>(HabitList.this,
                         android.R.layout.test_list_item, habitsToShow);
 
-                final AlertDialog.Builder builder = new AlertDialog.Builder(HabitList.this);
-                builder.setTitle(R.string.choose_habit_to_see_completions);
-                builder.setSingleChoiceItems(habitsToShowAdapter, -1, new DialogInterface.OnClickListener() {
+                final AlertDialog.Builder chooseHabitsBuilder = new AlertDialog.Builder(HabitList.this);
+                chooseHabitsBuilder.setTitle(R.string.choose_habit_to_see_completions);
+                chooseHabitsBuilder.setSingleChoiceItems(habitsToShowAdapter, -1, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         String habitName = habitsToShowAdapter.getItem(which);
 
                         final List<Completion> completionsForHabit = calendarManager.getCompletionsForHabit(habitName);
-                        final String[] displayText = new String[completionsForHabit.size()];
-                        final StringBuilder stringBuilder = new StringBuilder();
-                        for (int i = 0; i < completionsForHabit.size(); i++) {
-                            stringBuilder.setLength(0);
-                            stringBuilder.append(i+1).append(": On ").append(completionsForHabit.get(i).getDate());
-                            displayText[i] = stringBuilder.toString();
-                        }
+                        final ArrayAdapter<Completion> completionsAdapter = new ArrayAdapter<Completion>(HabitList.this,
+                                android.R.layout.test_list_item, completionsForHabit);
 
                         AlertDialog.Builder displayCompletionsDialogBuilder = new AlertDialog.Builder(HabitList.this);
                         displayCompletionsDialogBuilder.setTitle(R.string.see_completions_title);
-                        displayCompletionsDialogBuilder.setItems(displayText, null);
-                        displayCompletionsDialogBuilder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                        displayCompletionsDialogBuilder.setAdapter(completionsAdapter, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                final Completion toDelete = completionsAdapter.getItem(which);
+                                final AlertDialog.Builder confirmation = new AlertDialog.Builder(HabitList.this);
+                                confirmation.setMessage(R.string.delete_completion_confirm);
+                                confirmation.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        calendarManager.deleteCompletion(toDelete);
+                                        completionsAdapter.notifyDataSetChanged();
+                                        dialog.dismiss();
+                                        reloadHabitsOnScreen();
+                                    }
+                                });
+                                confirmation.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                    }
+                                });
+                                confirmation.show();
+                            }
+                        });
+                        displayCompletionsDialogBuilder.setPositiveButton(R.string.done, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
@@ -139,14 +154,61 @@ public class HabitList extends Activity {
                         displayCompletionsDialogBuilder.create().show();
                     }
                 });
-                builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                chooseHabitsBuilder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
                     }
                 });
-                final AlertDialog addNewDialog =  builder.create();
-                addNewDialog.show();
+                chooseHabitsBuilder.show();
+            }
+        });
+
+        Button deleteHabitsButton = (Button) findViewById(R.id.delete_habit_button);
+        deleteHabitsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final List<String> habitsToDelete = new ArrayList<String>();
+                for (Habit habit : calendarManager.getAllHabits()) {
+                    habitsToDelete.add(habit.getName());
+                }
+                final ArrayAdapter<String> habitsToDeleteAdapter = new ArrayAdapter<String>(HabitList.this,
+                        android.R.layout.test_list_item, habitsToDelete);
+
+                final AlertDialog.Builder builder = new AlertDialog.Builder(HabitList.this);
+                builder.setTitle(R.string.choose_habit);
+                builder.setSingleChoiceItems(habitsToDeleteAdapter, -1, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        AlertDialog.Builder confirmationBuilder = new AlertDialog.Builder(HabitList.this);
+                        final Habit toDelete = calendarManager.getHabitByName(habitsToDeleteAdapter.getItem(which));
+                        confirmationBuilder.setMessage(R.string.delete_habit_confirm);
+                        confirmationBuilder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                calendarManager.deleteHabit(toDelete);
+                                habitsToDelete.remove(toDelete.getName());
+                                habitsToDeleteAdapter.notifyDataSetChanged();
+                                dialog.dismiss();
+                                reloadHabitsOnScreen();
+                            }
+                        });
+                        confirmationBuilder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+                        confirmationBuilder.show();
+                    }
+                });
+                builder.setNegativeButton(R.string.back, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                builder.show();
             }
         });
     }

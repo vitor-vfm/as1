@@ -64,11 +64,6 @@ public class Habit {
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append(name);
-        for (Weekday weekday : weekdays) {
-            builder.append(weekday);
-        }
-        return builder.toString();
+        return name;
     }
 }

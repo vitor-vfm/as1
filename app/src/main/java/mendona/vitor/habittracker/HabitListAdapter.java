@@ -12,9 +12,9 @@ import java.util.ArrayList;
 /**
  * Created by vitor on 26/09/16.
  */
-public class HabitListAdapter extends ArrayAdapter<HabitOnScreen> {
+public class HabitsOnScreenAdapter extends ArrayAdapter<HabitOnScreen> {
 
-    public HabitListAdapter(Context context, ArrayList<HabitOnScreen> habitsOnScreen) {
+    public HabitsOnScreenAdapter(Context context, ArrayList<HabitOnScreen> habitsOnScreen) {
         super(context, 0, habitsOnScreen);
     }
 

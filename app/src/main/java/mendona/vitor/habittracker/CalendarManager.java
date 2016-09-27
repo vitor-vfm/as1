@@ -14,6 +14,8 @@ public interface CalendarManager {
 
     Set<Habit> getAllHabits();
 
+    Habit getHabitByName(String habitName);
+
     List<Completion> getCompletionsForHabit(String habitName);
 
     void addHabit(Habit habit);
@@ -22,7 +24,7 @@ public interface CalendarManager {
 
     void addCompletion(Habit habit, Date date);
 
-    void deleteCompletion(Habit habit, Date date);
+    void deleteCompletion(Completion completion);
 
     int timesHabitFulfilled(Habit habit);
 
