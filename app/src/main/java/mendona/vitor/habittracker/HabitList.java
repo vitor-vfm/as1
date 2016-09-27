@@ -13,6 +13,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -92,6 +93,56 @@ public class HabitList extends Activity {
                         calendarManager.addHabit(newHabit);
                         dialog.dismiss();
                         reloadHabitsOnScreen();
+                    }
+                });
+                final AlertDialog addNewDialog =  builder.create();
+                addNewDialog.show();
+            }
+        });
+
+        Button seeCompletionsButton = (Button) findViewById(R.id.see_completions_button);
+        seeCompletionsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final List<String> habitsToShow = new ArrayList<String>();
+                for (Habit habit : calendarManager.getAllHabits()) {
+                    habitsToShow.add(habit.getName());
+                }
+                final ArrayAdapter<String> habitsToShowAdapter = new ArrayAdapter<String>(HabitList.this,
+                        android.R.layout.test_list_item, habitsToShow);
+
+                final AlertDialog.Builder builder = new AlertDialog.Builder(HabitList.this);
+                builder.setTitle(R.string.choose_habit_to_see_completions);
+                builder.setSingleChoiceItems(habitsToShowAdapter, -1, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String habitName = habitsToShowAdapter.getItem(which);
+
+                        final List<Completion> completionsForHabit = calendarManager.getCompletionsForHabit(habitName);
+                        final String[] displayText = new String[completionsForHabit.size()];
+                        final StringBuilder stringBuilder = new StringBuilder();
+                        for (int i = 0; i < completionsForHabit.size(); i++) {
+                            stringBuilder.setLength(0);
+                            stringBuilder.append(i+1).append(": On ").append(completionsForHabit.get(i).getDate());
+                            displayText[i] = stringBuilder.toString();
+                        }
+
+                        AlertDialog.Builder displayCompletionsDialogBuilder = new AlertDialog.Builder(HabitList.this);
+                        displayCompletionsDialogBuilder.setTitle(R.string.see_completions_title);
+                        displayCompletionsDialogBuilder.setItems(displayText, null);
+                        displayCompletionsDialogBuilder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+                        displayCompletionsDialogBuilder.create().show();
+                    }
+                });
+                builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
                     }
                 });
                 final AlertDialog addNewDialog =  builder.create();

@@ -87,15 +87,6 @@ public class AbstractCalendarManager implements CalendarManager {
         return cache.get(date);
     }
 
-//    private void clearCache(Habit habit) {
-//        final Set<String> datesInvalid = new HashSet<>();
-//
-//        for (String date : cache.keySet())
-//            if (cache.get(date).containsKey(habit))
-//                datesInvalid.add(date);
-//
-//        cache.keySet().removeAll(datesInvalid);
-//    }
 
     private void clearCache(String date) {
         cache.keySet().remove(date);
@@ -103,7 +94,18 @@ public class AbstractCalendarManager implements CalendarManager {
 
     @Override
     public Set<Habit> getAllHabits() {
-        return habits;
+        // return a copy to avoid having the inner set mutated
+        return new HashSet<>(habits);
+    }
+
+    @Override
+    public List<Completion> getCompletionsForHabit(String habitName) {
+        final List<Completion> result = new ArrayList<>();
+        for (Completion completion : completions) {
+            if (completion.getHabit().getName().equals(habitName))
+                result.add(completion);
+        }
+        return result;
     }
 
     @Override
@@ -206,8 +208,7 @@ public class AbstractCalendarManager implements CalendarManager {
 
     }
 
-    @Override
-    public void saveHabits() {
+    private void saveHabits() {
         try {
             FileOutputStream fos = context.openFileOutput(HABIT_FILENAME, 0);
             OutputStreamWriter writer = new OutputStreamWriter(fos);
@@ -221,8 +222,7 @@ public class AbstractCalendarManager implements CalendarManager {
         }
     }
 
-    @Override
-    public void saveCompletions() {
+    private void saveCompletions() {
         try {
             FileOutputStream fos = context.openFileOutput(COMPLETION_FILENAME, 0);
             OutputStreamWriter writer = new OutputStreamWriter(fos);

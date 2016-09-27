@@ -46,4 +46,9 @@ public class Completion {
         result = 31 * result + date.hashCode();
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "Date: " + date + "; Habit: " + habit;
+    }
 }

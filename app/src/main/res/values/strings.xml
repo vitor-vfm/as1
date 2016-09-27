@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">mendona-HabitTracker</string>
-    <string name="appwidget_text">EXAMPLE</string>
     <string name="add_habit">Add habit</string>
-    <string name="save_completions">Save completions</string>
+    <string name="delete_habit">Delete habit</string>
+    <string name="see_completions">See/Delete completions</string>
 
     <string name="add_habit_date_hint">Original Date (dd-MM-yyyy)</string>
     <string name="add_habit_name_hint">Habit Name</string>
@@ -13,6 +13,10 @@
     <string name="add_habit_OK_button_text">Done</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="ok">OK</string>
 
     <string name="complete_habit_dialog_title">Complete habit for today?</string>
+
+    <string name="choose_habit_to_see_completions">Choose habit to see completions</string>
+    <string name="see_completions_title">Click on a completion to delete it</string>
 </resources>

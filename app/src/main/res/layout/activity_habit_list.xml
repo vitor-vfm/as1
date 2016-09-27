@@ -19,10 +19,10 @@
     </ListView>
 
     <Button
-        android:id="@+id/save_completion_button"
+        android:id="@+id/see_completions_button"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/save_completions"/>
+        android:text="@string/see_completions"/>
     <Button
         android:id="@+id/add_habit_button"
         android:layout_width="match_parent"
