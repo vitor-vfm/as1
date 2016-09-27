@@ -171,10 +171,12 @@ public class AbstractCalendarManager implements CalendarManager {
     }
 
     private void loadDataFromFile() {
+        File habitFile = null;
+        File completionFile = null;
         try {
             Gson gson = new Gson();
 
-            File habitFile = context.getFileStreamPath(HABIT_FILENAME);
+            habitFile = context.getFileStreamPath(HABIT_FILENAME);
             if (habitFile != null && habitFile.exists()) {
                 FileInputStream habitFis = context.openFileInput(HABIT_FILENAME);
                 BufferedReader habitIn = new BufferedReader(new InputStreamReader(habitFis));
@@ -183,7 +185,7 @@ public class AbstractCalendarManager implements CalendarManager {
                 habits.addAll(gson.<Set<Habit>>fromJson(habitIn, habitType));
             }
 
-            File completionFile = context.getFileStreamPath(COMPLETION_FILENAME);
+            completionFile = context.getFileStreamPath(COMPLETION_FILENAME);
             if (completionFile != null && completionFile.exists()) {
                 FileInputStream completionFis = context.openFileInput(COMPLETION_FILENAME);
                 BufferedReader completionIn = new BufferedReader(new InputStreamReader(completionFis));
@@ -194,6 +196,12 @@ public class AbstractCalendarManager implements CalendarManager {
 
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e.getMessage());
+        } catch (NullPointerException npe) {
+            if (habitFile != null)
+                habitFile.delete();
+            if (completionFile != null)
+                completionFile.delete();
+            throw new RuntimeException("Persistence file(s) corrupted. They were deleted");
         }
 
     }
@@ -207,7 +215,7 @@ public class AbstractCalendarManager implements CalendarManager {
             gson.toJson(habits, writer);
             writer.flush();
         } catch (FileNotFoundException e) {
-             throw new RuntimeException();
+             throw new RuntimeException("Could not open habits persistence file");
         } catch (IOException e) {
              throw new RuntimeException();
         }
@@ -216,13 +224,13 @@ public class AbstractCalendarManager implements CalendarManager {
     @Override
     public void saveCompletions() {
         try {
-            FileOutputStream fos = new FileOutputStream(COMPLETION_FILENAME, false);
+            FileOutputStream fos = context.openFileOutput(COMPLETION_FILENAME, 0);
             OutputStreamWriter writer = new OutputStreamWriter(fos);
             Gson gson = new Gson();
             gson.toJson(completions, writer);
             writer.flush();
         } catch (FileNotFoundException e) {
-            throw new RuntimeException();
+            throw new RuntimeException("Could not open completions persistence file");
         } catch (IOException e) {
             throw new RuntimeException();
         }

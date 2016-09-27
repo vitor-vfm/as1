@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AbsListView;
@@ -20,6 +21,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -29,8 +31,8 @@ public class HabitList extends Activity {
     private Calendar calendar;
     private Date currentDate;
 
-    private List<String> habitsOnScreen;
-    private ArrayAdapter<String> adapter;
+    private ArrayList<HabitOnScreen> habitsOnScreen;
+    private HabitListAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,11 +42,35 @@ public class HabitList extends Activity {
         calendar = Calendar.getInstance();
         currentDate = new Date(calendar.getTimeInMillis());
         calendarManager = new AbstractCalendarManager(calendar, this);
-        habitsOnScreen = new ArrayList<String>();
-        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_multiple_choice, habitsOnScreen);
+        habitsOnScreen = new ArrayList<>();
+        adapter = new HabitListAdapter(this, habitsOnScreen);
 
-        ListView habitListView = (ListView) findViewById(R.id.habit_list);
+        final ListView habitListView = (ListView) findViewById(R.id.habit_list);
         habitListView.setAdapter(adapter);
+        habitListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
+                AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(HabitList.this);
+                dialogBuilder.setTitle(R.string.complete_habit_dialog_title);
+                dialogBuilder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                dialogBuilder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        final HabitOnScreen habitOnScreen = adapter.getItem(position);
+                        calendarManager.addCompletion(habitOnScreen.getHabit(), currentDate);
+                        reloadHabitsOnScreen();
+                        dialog.dismiss();
+                    }
+                });
+                AlertDialog dialog = dialogBuilder.create();
+                dialog.show();
+            }
+        });
         habitListView.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
 
         Button addHabitButton = (Button) findViewById(R.id.add_habit_button);
@@ -83,8 +109,8 @@ public class HabitList extends Activity {
     private void reloadHabitsOnScreen() {
         habitsOnScreen.clear();
         final Map<Habit, List<Completion>> habitsForDate = calendarManager.getHabitsForDate(currentDate);
-        for (final Habit habit : habitsForDate.keySet()) {
-            habitsOnScreen.add(habit.getName());
+        for (final Map.Entry<Habit, List<Completion>> e : habitsForDate.entrySet()) {
+            habitsOnScreen.add(new HabitOnScreen(e.getKey(), e.getValue().size()));
         }
         Collections.sort(habitsOnScreen);
         adapter.notifyDataSetChanged();
