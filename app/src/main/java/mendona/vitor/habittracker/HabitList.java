@@ -39,7 +39,7 @@ public class HabitList extends Activity {
 
         calendar = Calendar.getInstance();
         currentDate = new Date(calendar.getTimeInMillis());
-        calendarManager = new AbstractCalendarManager(calendar, this);
+        calendarManager = new AbstractCalendarManager(calendar, this, currentDate);
         habitsOnScreen = new ArrayList<>();
         adapter = new HabitsOnScreenAdapter(this, habitsOnScreen);
 
@@ -209,6 +209,49 @@ public class HabitList extends Activity {
                     }
                 });
                 builder.show();
+            }
+        });
+
+        Button showStatsButton = (Button) findViewById(R.id.show_stats_button);
+        showStatsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final Set<Habit> habitsToShow = calendarManager.getAllHabits();
+                final List<String> habitNames = new ArrayList<String>();
+                for (Habit habit : habitsToShow) {
+                    habitNames.add(habit.getName());
+                }
+
+                final ArrayAdapter<String> habitNamesAdapter = new ArrayAdapter<String>(HabitList.this,
+                        android.R.layout.simple_list_item_1, habitNames);
+
+                final AlertDialog.Builder habitsDialog = new AlertDialog.Builder(HabitList.this);
+                habitsDialog.setAdapter(habitNamesAdapter, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        final Habit habitToShowStats = calendarManager.getHabitByName(habitNamesAdapter.getItem(which));
+                        final int timesFulfilled = calendarManager.timesHabitFulfilled(habitToShowStats);
+                        final int timesCompleted = calendarManager.getCompletionsForHabit(habitToShowStats.getName()).size();
+                        final String displayMessage = getString(R.string.times_habit_completed) + timesCompleted + "\n" +
+                                getString(R.string.times_habit_fulfilled) + timesFulfilled;
+                        final AlertDialog.Builder statsDialog = new AlertDialog.Builder(HabitList.this);
+                        statsDialog.setMessage(displayMessage);
+                        statsDialog.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+                        statsDialog.show();
+                    }
+                });
+                habitsDialog.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                habitsDialog.show();
             }
         });
     }

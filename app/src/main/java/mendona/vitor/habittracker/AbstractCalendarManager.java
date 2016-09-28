@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.Type;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -36,7 +37,7 @@ public class AbstractCalendarManager implements CalendarManager {
 
     final Map<String, Map<Habit, List<Completion>>> cache;
 
-    public AbstractCalendarManager(final Calendar calendar, final Context context) {
+    public AbstractCalendarManager(final Calendar calendar, final Context context, final Date currentDate) {
 
         this.completions = new ArrayList<Completion>();
         this.habits = new HashSet<Habit>();
@@ -54,6 +55,8 @@ public class AbstractCalendarManager implements CalendarManager {
         for (Habit habit : habits)
             for (Weekday weekday : habit.getWeekdays())
                 habitsInWeekday.get(weekday).add(habit);
+
+        datesRecorded.add(simpleDateFormat.format(currentDate));
 
     }
 
@@ -138,13 +141,16 @@ public class AbstractCalendarManager implements CalendarManager {
             habitsInWeekday.get(weekday).remove(habit);
         }
 
-        for (Completion completion : completions) {
-            if (completion.getHabit().equals(habit))
-                completions.remove(completion);
+        final List<Completion> previousCompletions = new ArrayList<>(completions);
+        completions.clear();
+        for (Completion completion : previousCompletions) {
+            if (!completion.getHabit().equals(habit))
+                completions.add(completion);
         }
 
         cache.clear();
         saveHabits();
+        saveCompletions();
     }
 
     @Override
@@ -167,26 +173,30 @@ public class AbstractCalendarManager implements CalendarManager {
 
     @Override
     public int timesHabitFulfilled(Habit habit) {
-//        int timesFulfilled = 0;
-//        for (String date : datesRecorded) {
-//            final Integer completionsInDate = getHabitsForDate(date).get(habit);
-//            if (completionsInDate != null && completionsInDate > 0)
-//                timesFulfilled++;
-//        }
-//        return timesFulfilled;
-        return 0;
-    }
 
-    @Override
-    public int timesHabitUnfulfilled(Habit habit) {
-//        int timesUnfulfilled = 0;
-//        for (String date : datesRecorded) {
-//            final Integer completionsInDate = getHabitsForDate(date).get(habit);
-//            if (completionsInDate != null && completionsInDate == 0)
-//                timesUnfulfilled++;
-//        }
-//        return timesUnfulfilled;
-        return 0;
+        final Set<Weekday> habitWeekdays = habit.getWeekdays();
+        final Map<String, Boolean> wasCompletedIn = new HashMap<>();
+
+        // find dates where the habit should be completed
+        for (String date : datesRecorded) {
+            final Weekday weekday = Weekday.fromFormattedDate(date, calendar);
+            if (habitWeekdays.contains(weekday))
+                wasCompletedIn.put(date, false);
+        }
+
+        for (Completion completion : completions) {
+            if (completion.getHabit().equals(habit)) {
+                if (wasCompletedIn.containsKey(completion.getDate()))
+                    wasCompletedIn.put(completion.getDate(), true);
+            }
+        }
+
+        int timesFulfilled = 0;
+        for (String date : wasCompletedIn.keySet()) {
+            if (wasCompletedIn.get(date))
+                timesFulfilled++;
+        }
+        return timesFulfilled;
     }
 
     private void loadDataFromFile() {
@@ -210,7 +220,10 @@ public class AbstractCalendarManager implements CalendarManager {
                 BufferedReader completionIn = new BufferedReader(new InputStreamReader(completionFis));
                 Type completionType = new TypeToken<List<Completion>>() {
                 }.getType();
-                completions.addAll(gson.<List<Completion>>fromJson(completionIn, completionType));
+                List<Completion> completionsFromFile = gson.<List<Completion>>fromJson(completionIn, completionType);
+                completions.addAll(completionsFromFile);
+                for (Completion completion : completions)
+                    datesRecorded.add(completion.getDate());
             }
 
         } catch (FileNotFoundException e) {

@@ -25,4 +25,9 @@
 
     <string name="delete_habit_confirm">Are you sure you want to delete this habit?</string>
     <string name="delete_completion_confirm">Are you sure you want to delete this completion?</string>
+
+    <string name="show_stats">Show stats about a habit</string>
+
+    <string name="times_habit_completed">Times habit has been completed: </string>
+    <string name="times_habit_fulfilled">Times habit has been fulfilled: </string>
 </resources>

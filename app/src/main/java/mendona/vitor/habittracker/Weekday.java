@@ -1,5 +1,6 @@
 package mendona.vitor.habittracker;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -30,5 +31,16 @@ public enum Weekday {
                 return weekday;
 
         return SUNDAY;
+    }
+
+    public static Weekday fromFormattedDate(final String formattedDate, final Calendar calendar) {
+        final SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+        try {
+            final Date javaDate = sdf.parse(formattedDate);
+            calendar.setTime(javaDate);
+            return fromDate(javaDate, calendar);
+        } catch (ParseException pe) {
+            throw new RuntimeException("Date could not be parsed: " + formattedDate);
+        }
     }
 }

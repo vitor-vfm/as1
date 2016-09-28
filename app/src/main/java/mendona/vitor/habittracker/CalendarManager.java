@@ -28,6 +28,4 @@ public interface CalendarManager {
 
     int timesHabitFulfilled(Habit habit);
 
-    int timesHabitUnfulfilled(Habit habit);
-
 }
