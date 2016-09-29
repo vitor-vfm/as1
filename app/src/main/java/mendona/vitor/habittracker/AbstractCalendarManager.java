@@ -124,7 +124,7 @@ public class AbstractCalendarManager implements CalendarManager {
     }
 
     private boolean validNewHabit(Habit habit) {
-        if (habit.getName() == null || habit.getName().isEmpty() || habits.contains(habit))
+        if (habit == null || habit.getName() == null || habit.getName().isEmpty() || habits.contains(habit))
             return false;
 
         for (Habit existingHabit : habits)

@@ -311,7 +311,9 @@ public class HabitList extends Activity {
         final Set<Weekday> habitWeekdays = new HashSet<>();
         for (String word : weekdays.split(" ")) {
             final Weekday weekday = weekdayInputTranslator.get(word.toUpperCase());
-            if (weekday != null) {
+            if (null == weekday) {
+                return null;
+            } else {
                 habitWeekdays.add(weekday);
             }
         }
