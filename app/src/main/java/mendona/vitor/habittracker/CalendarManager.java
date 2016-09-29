@@ -10,6 +10,8 @@ import java.util.Set;
  */
 public interface CalendarManager {
 
+    String getFormattedDate(Date date);
+
     Map<Habit, List<Completion>> getHabitsForDate(Date calendar);
 
     Set<Habit> getAllHabits();
@@ -18,11 +20,11 @@ public interface CalendarManager {
 
     List<Completion> getCompletionsForHabit(String habitName);
 
-    void addHabit(Habit habit);
+    boolean addHabit(Habit habit);
 
     void deleteHabit(Habit habit);
 
-    void addCompletion(Habit habit, Date date);
+    boolean addCompletion(Habit habit, Date date);
 
     void deleteCompletion(Completion completion);
 

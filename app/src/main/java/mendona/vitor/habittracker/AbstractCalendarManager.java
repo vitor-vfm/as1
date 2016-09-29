@@ -123,14 +123,34 @@ public class AbstractCalendarManager implements CalendarManager {
         return result;
     }
 
+    private boolean validNewHabit(Habit habit) {
+        if (habit.getName() == null || habit.getName().isEmpty() || habits.contains(habit))
+            return false;
+
+        for (Habit existingHabit : habits)
+            if (existingHabit.getName().equals(habit.getName()))
+                return false;
+
+        return true;
+    }
+
     @Override
-    public void addHabit(Habit habit) {
+    public String getFormattedDate(Date date) {
+        return simpleDateFormat.format(date);
+    }
+
+    @Override
+    public boolean addHabit(Habit habit) {
+        if (!validNewHabit(habit))
+            return false;
+
         habits.add(habit);
         for (Weekday weekday : habit.getWeekdays())
             habitsInWeekday.get(weekday).add(habit);
 
         cache.clear();
         saveHabits();
+        return true;
     }
 
     @Override
@@ -153,14 +173,21 @@ public class AbstractCalendarManager implements CalendarManager {
         saveCompletions();
     }
 
+    private boolean validNewCompletion(Completion completion) {
+        return habits.contains(completion.getHabit());
+    }
+
     @Override
-    public void addCompletion(Habit habit, Date date) {
+    public boolean addCompletion(Habit habit, Date date) {
         final String formattedDate = simpleDateFormat.format(date);
         final Completion completion = new Completion(habit, formattedDate);
+        if (!validNewCompletion(completion))
+            return false;
         completions.add(completion);
 
         clearCache(formattedDate);
         saveCompletions();
+        return true;
     }
 
     @Override
