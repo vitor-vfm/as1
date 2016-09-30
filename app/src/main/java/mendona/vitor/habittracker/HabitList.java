@@ -16,7 +16,6 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -33,6 +32,9 @@ public class HabitList extends Activity {
     private Calendar calendar;
     private Date currentDate;
 
+    private final static String HABIT_FILENAME = "habit_data.dat";
+    private final static String COMPLETION_FILENAME = "completion_data.dat";
+
     private ArrayList<HabitOnScreen> habitsOnScreen;
     private HabitsOnScreenAdapter adapter;
 
@@ -43,7 +45,7 @@ public class HabitList extends Activity {
 
         calendar = Calendar.getInstance();
         currentDate = new Date(calendar.getTimeInMillis());
-        calendarManager = new AbstractCalendarManager(calendar, this, currentDate);
+        calendarManager = new DefaultCalendarManager(this, currentDate, HABIT_FILENAME, COMPLETION_FILENAME);
         habitsOnScreen = new ArrayList<>();
         adapter = new HabitsOnScreenAdapter(this, habitsOnScreen);
 
@@ -253,7 +255,7 @@ public class HabitList extends Activity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         final Habit habitToShowStats = calendarManager.getHabitByName(habitNamesAdapter.getItem(which));
-                        final int timesFulfilled = calendarManager.timesHabitFulfilled(habitToShowStats);
+                        final int timesFulfilled = calendarManager.timesHabitFulfilled(habitToShowStats, currentDate);
                         final int timesCompleted = calendarManager.getCompletionsForHabit(habitToShowStats.getName()).size();
                         final String displayMessage = getString(R.string.times_habit_completed) + timesCompleted + "\n" +
                                 getString(R.string.times_habit_fulfilled) + timesFulfilled;

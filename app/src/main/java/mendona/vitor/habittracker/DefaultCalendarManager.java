@@ -14,40 +14,44 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.Type;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
  * Created by vitor on 15/09/16.
  */
-public class AbstractCalendarManager implements CalendarManager {
+public class DefaultCalendarManager implements CalendarManager {
 
-    private static final String HABIT_FILENAME = "habits.dat";
-    private static final String COMPLETION_FILENAME = "completion.dat";
+    private final String habitFilename;
+    private final String completionFilename;
 
-    final List<Completion> completions;
-    final Set<Habit> habits;
-    final Set<HabitDate> datesRecorded;
+    private final List<Completion> completions;
+    private final Set<Habit> habits;
+    private final Set<HabitDate> datesRecorded;
 
-    final Map<Weekday, Set<Habit>> habitsInWeekday;
-    final Calendar calendar;
-    final Context context;
-    final SimpleDateFormat simpleDateFormat;
+    private final Map<Weekday, Set<Habit>> habitsInWeekday;
+    private final Context context;
 
-    final Map<HabitDate, Map<Habit, List<Completion>>> cache;
+    private final Map<HabitDate, Map<Habit, List<Completion>>> cache;
 
-    public AbstractCalendarManager(final Calendar calendar, final Context context, final Date currentDate) {
+    public DefaultCalendarManager(final Context context,
+                                  final Date currentDate,
+                                  final String habitFilename,
+                                  final String completionFilename) {
 
         this.completions = new ArrayList<Completion>();
         this.habits = new HashSet<Habit>();
         this.datesRecorded = new HashSet<HabitDate>();
-        this.simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy", context.getResources().getConfiguration().locale);
         this.cache = new HashMap<HabitDate, Map<Habit, List<Completion>>>();
-        this.calendar = calendar;
         this.context = context;
 
-        loadDataFromFile();
+        if (null == habitFilename || null == completionFilename)
+            throw new IllegalArgumentException("Filenames cannot be null");
+
+        this.habitFilename = habitFilename;
+        this.completionFilename = completionFilename;
+
+        loadDataFromHabitsFile();
+        loadDataFromCompletionsFile();
 
         this.habitsInWeekday = new HashMap<Weekday, Set<Habit>>();
         for (Weekday weekday : Weekday.values())
@@ -135,11 +139,6 @@ public class AbstractCalendarManager implements CalendarManager {
     }
 
     @Override
-    public String getFormattedDate(Date date) {
-        return simpleDateFormat.format(date);
-    }
-
-    @Override
     public boolean addHabit(Habit habit) {
         if (!validNewHabit(habit))
             return false;
@@ -198,78 +197,122 @@ public class AbstractCalendarManager implements CalendarManager {
     }
 
     @Override
-    public int timesHabitFulfilled(Habit habit) {
+    public int timesHabitFulfilled(Habit habit, Date currentDate) {
 
-        Calendar.getInstance().setTime(habit.getOriginalDate().getJavaDate());
-//
-//        final Set<Weekday> habitWeekdays = habit.getWeekdays();
-//        final Map<String, Boolean> wasCompletedIn = new HashMap<>();
-//
-//        // find dates where the habit should be completed
-//        for (String date : datesRecorded) {
-//            final Weekday weekday = Weekday.fromFormattedDate(date, calendar);
-//            if (habitWeekdays.contains(weekday))
-//                wasCompletedIn.put(date, false);
-//        }
-//
-//        for (Completion completion : completions) {
-//            if (completion.getHabit().equals(habit)) {
-//                if (wasCompletedIn.containsKey(completion.getDate()))
-//                    wasCompletedIn.put(completion.getDate(), true);
-//            }
-//        }
-//
-//        int timesFulfilled = 0;
-//        for (String date : wasCompletedIn.keySet()) {
-//            if (wasCompletedIn.get(date))
-//                timesFulfilled++;
-//        }
-//        return timesFulfilled;
-        return 0;
+        final Set<Weekday> habitWeekdays = habit.getWeekdays();
+        final HabitDate originalDate = habit.getOriginalDate();
+
+        final Set<HabitDate> shouldBeCompletedIn = new HashSet<>();
+        final HabitDate current = new HabitDate(currentDate);
+        if (habitWeekdays.contains(current.getWeekday()) &&
+                originalDate.toString().compareTo(current.toString()) > 0) {
+            shouldBeCompletedIn.add(current);
+        }
+
+        final Set<HabitDate> wasCompletedIn = new HashSet<>();
+
+        for (Completion completion : completions) {
+            final HabitDate date = completion.getDate();
+
+            if (habitWeekdays.contains(date.getWeekday()) &&
+                    originalDate.toString().compareTo(current.toString()) > 0)
+                shouldBeCompletedIn.add(date);
+
+            if (completion.getHabit().equals(habit))
+                wasCompletedIn.add(date);
+        }
+
+        shouldBeCompletedIn.retainAll(wasCompletedIn);
+        return shouldBeCompletedIn.size();
     }
 
-    private void loadDataFromFile() {
-        File habitFile = null;
-        File completionFile = null;
+    private void createDataFile(String filePath) {
         try {
-            Gson gson = new Gson();
+            final FileOutputStream fos = context.openFileOutput(filePath, 0);
+            fos.flush();
+            fos.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-            habitFile = context.getFileStreamPath(HABIT_FILENAME);
-            if (habitFile != null && habitFile.exists()) {
-                FileInputStream habitFis = context.openFileInput(HABIT_FILENAME);
-                BufferedReader habitIn = new BufferedReader(new InputStreamReader(habitFis));
-                Type habitType = new TypeToken<Set<Habit>>() {
-                }.getType();
-                habits.addAll(gson.<Set<Habit>>fromJson(habitIn, habitType));
+    private void loadDataFromHabitsFile() {
+        Gson gson = new Gson();
+
+        try {
+            FileInputStream habitFis = context.openFileInput(habitFilename);
+            BufferedReader habitIn = new BufferedReader(new InputStreamReader(habitFis));
+            Type habitType = new TypeToken<Set<Habit>>(){}.getType();
+            final Set<Habit> habitsFromFile = gson.<Set<Habit>>fromJson(habitIn, habitType);
+            if (habitsFromFile != null) {
+                habits.addAll(habitsFromFile);
             }
+        } catch (FileNotFoundException fnfe) {
+            createDataFile(habitFilename);
+        } catch (RuntimeException re) {
+            context.deleteFile(habitFilename);
+            throw new RuntimeException("File " + habitFilename + " was corrupted and was deleted");
+        }
+    }
 
-            completionFile = context.getFileStreamPath(COMPLETION_FILENAME);
-            if (completionFile != null && completionFile.exists()) {
-                FileInputStream completionFis = context.openFileInput(COMPLETION_FILENAME);
-                BufferedReader completionIn = new BufferedReader(new InputStreamReader(completionFis));
-                Type completionType = new TypeToken<List<Completion>>() {
-                }.getType();
-                List<Completion> completionsFromFile = gson.<List<Completion>>fromJson(completionIn, completionType);
+    private void loadDataFromCompletionsFile() {
+        Gson gson = new Gson();
+        try {
+            FileInputStream completionFis = context.openFileInput(completionFilename);
+            BufferedReader completionIn = new BufferedReader(new InputStreamReader(completionFis));
+            Type completionType = new TypeToken<List<Completion>>() {
+            }.getType();
+            List<Completion> completionsFromFile = gson.<List<Completion>>fromJson(completionIn, completionType);
+            if (completionsFromFile != null) {
                 completions.addAll(completionsFromFile);
                 for (Completion completion : completions)
                     datesRecorded.add(completion.getDate());
             }
-
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e.getMessage());
-        } catch (NullPointerException npe) {
-            if (habitFile != null)
-                habitFile.delete();
-            if (completionFile != null)
-                completionFile.delete();
-            throw new RuntimeException("Persistence file(s) corrupted. They were deleted");
+        } catch (FileNotFoundException fnfe) {
+            createDataFile(completionFilename);
+        } catch (RuntimeException re) {
+            context.deleteFile(completionFilename);
+            throw new RuntimeException("File " + completionFilename + " was corrupted and was deleted");
         }
+    }
 
+
+    private void loadDataFromFile() {
+        File habitFile = null;
+        File completionFile = null;
+//            Gson gson = new Gson();
+//
+//            habitFile = context.getFileStreamPath(habitFilename);
+//            if (habitFile != null && habitFile.exists()) {
+//                FileInputStream habitFis = context.openFileInput(habitFilename);
+//                BufferedReader habitIn = new BufferedReader(new InputStreamReader(habitFis));
+//                Type habitType = new TypeToken<Set<Habit>>() {
+//                }.getType();
+//                habits.addAll(gson.<Set<Habit>>fromJson(habitIn, habitType));
+//            }
+
+//            completionFile = context.getFileStreamPath(completionFilename);
+//            if (completionFile != null && completionFile.exists()) {
+//                FileInputStream completionFis = context.openFileInput(completionFilename);
+//                BufferedReader completionIn = new BufferedReader(new InputStreamReader(completionFis));
+//                Type completionType = new TypeToken<List<Completion>>() {
+//                }.getType();
+//                List<Completion> completionsFromFile = gson.<List<Completion>>fromJson(completionIn, completionType);
+//                completions.addAll(completionsFromFile);
+//                for (Completion completion : completions)
+//                    datesRecorded.add(completion.getDate());
+//            }
+//
+//            if (habitFile != null)
+//                habitFile.delete();
+//            if (completionFile != null)
+//                completionFile.delete();
+//            throw new RuntimeException("Persistence file(s) corrupted. They were deleted");
     }
 
     private void saveHabits() {
         try {
-            FileOutputStream fos = context.openFileOutput(HABIT_FILENAME, 0);
+            FileOutputStream fos = context.openFileOutput(habitFilename, 0);
             OutputStreamWriter writer = new OutputStreamWriter(fos);
             Gson gson = new Gson();
             gson.toJson(habits, writer);
@@ -283,7 +326,7 @@ public class AbstractCalendarManager implements CalendarManager {
 
     private void saveCompletions() {
         try {
-            FileOutputStream fos = context.openFileOutput(COMPLETION_FILENAME, 0);
+            FileOutputStream fos = context.openFileOutput(completionFilename, 0);
             OutputStreamWriter writer = new OutputStreamWriter(fos);
             Gson gson = new Gson();
             gson.toJson(completions, writer);

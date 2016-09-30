@@ -10,16 +10,17 @@ import java.util.Locale;
  */
 public class HabitDate {
 
+    static String FORMAT = "yyyy-MM-dd";
+
     final private Date innerDate;
     final private String stringRepresentation;
     final private Weekday weekday;
 
-    final SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
-
     public HabitDate(Date date) {
         this.innerDate = date;
+        SimpleDateFormat sdf = new SimpleDateFormat(FORMAT, Locale.getDefault());
         this.stringRepresentation = sdf.format(date);
-        this.weekday = Weekday.fromDate(date, Calendar.getInstance());
+        this.weekday = Weekday.fromDate(date);
     }
 
     public Date getJavaDate() {
@@ -50,4 +51,34 @@ public class HabitDate {
     public String toString() {
         return stringRepresentation;
     }
+//
+//    @Override
+//    public int compareTo(HabitDate another) {
+//        if (null == another)
+//            return -1;
+//        final Calendar calendar = Calendar.getInstance();
+//
+//        calendar.setTime(innerDate);
+//        int year = calendar.get(Calendar.YEAR);
+//        int month = calendar.get(Calendar.MONTH);
+//        int day = calendar.get(Calendar.DAY_OF_MONTH);
+//
+//        calendar.setTime(another.innerDate);
+//        int anotherYear = calendar.get(Calendar.YEAR);
+//        int anotherMonth = calendar.get(Calendar.MONTH);
+//        int anotherDay = calendar.get(Calendar.DAY_OF_MONTH);
+//
+//        if (year < anotherYear)
+//            return -1;
+//        else if (year > anotherYear)
+//            return 1;
+//        else if (month < anotherMonth)
+//            return -1;
+//        else if (month > anotherMonth)
+//            return 1;
+//        else if (day == anotherDay)
+//            return 0;
+//        else
+//            return day < anotherDay ? -1 : 1;
+//    }
 }
