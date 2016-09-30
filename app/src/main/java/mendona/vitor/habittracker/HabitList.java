@@ -317,6 +317,6 @@ public class HabitList extends Activity {
                 habitWeekdays.add(weekday);
             }
         }
-        return new Habit(name, calendarManager.getFormattedDate(originalDate), habitWeekdays);
+        return new Habit(name, originalDate, habitWeekdays);
     }
 }

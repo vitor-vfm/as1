@@ -13,10 +13,10 @@ public class Habit {
     // Represents a habit. This class should be immutable
 
     private final String name;
-    private final String originalDate; // dd-MM-yyyy
+    private final HabitDate originalDate;
     private final Set<Weekday> weekdays;
 
-    public Habit(final String name, final String originalDate, final Set<Weekday> weekdays) {
+    public Habit(final String name, final Date originalDate, final Set<Weekday> weekdays) {
         if (name == null)
             throw new InvalidParameterException("name is null");
         if (originalDate == null)
@@ -25,7 +25,7 @@ public class Habit {
             throw new InvalidParameterException("weekdays is null");
 
         this.name = name;
-        this.originalDate = originalDate;
+        this.originalDate = new HabitDate(originalDate);
         this.weekdays = weekdays;
     }
 
@@ -33,7 +33,7 @@ public class Habit {
         return name;
     }
 
-    public String getOriginalDate() {
+    public HabitDate getOriginalDate() {
         return originalDate;
     }
 

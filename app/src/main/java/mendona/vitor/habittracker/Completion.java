@@ -8,23 +8,23 @@ import java.util.Date;
  */
 public class Completion {
     private Habit habit;
-    private String date; // dd-MM-yyyy
+    private HabitDate date;
 
-    public Completion(final Habit habit, final String date) {
+    public Completion(final Habit habit, final Date date) {
         if (habit == null)
             throw new InvalidParameterException("Habit is null");
         if (date == null)
             throw new InvalidParameterException("Date is null");
 
         this.habit = habit;
-        this.date = date;
+        this.date = new HabitDate(date);
     }
 
     public Habit getHabit() {
         return habit;
     }
 
-    public String getDate() {
+    public HabitDate getDate() {
         return date;
     }
 
