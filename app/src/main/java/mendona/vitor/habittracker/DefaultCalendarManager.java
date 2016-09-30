@@ -6,7 +6,6 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -201,25 +200,39 @@ public class DefaultCalendarManager implements CalendarManager {
 
         final Set<Weekday> habitWeekdays = habit.getWeekdays();
         final HabitDate originalDate = habit.getOriginalDate();
+        final Comparator<HabitDate> dateComparator = new Comparator<HabitDate>() {
+            @Override
+            public int compare(HabitDate lhs, HabitDate rhs) {
+                final Calendar calendar = Calendar.getInstance();
+                calendar.setTime(lhs.getJavaDate());
+                int lYear = calendar.get(Calendar.YEAR);
+                int lMonth = calendar.get(Calendar.MONTH);
+                int lDay = calendar.get(Calendar.DAY_OF_MONTH);
+
+                calendar.setTime(rhs.getJavaDate());
+                int rYear = calendar.get(Calendar.YEAR);
+                int rMonth = calendar.get(Calendar.MONTH);
+                int rDay = calendar.get(Calendar.DAY_OF_MONTH);
+
+                if (lYear < rYear) return 1;
+                else if (lYear > rYear) return -1;
+                else if (lMonth < rMonth) return 1;
+                else if (lMonth > rMonth) return -1;
+                else if (lDay == rDay) return 0;
+                else return lDay > rDay ? -1 : 1;
+            }
+        };
 
         final Set<HabitDate> shouldBeCompletedIn = new HashSet<>();
-        final HabitDate current = new HabitDate(currentDate);
-        if (habitWeekdays.contains(current.getWeekday()) &&
-                originalDate.toString().compareTo(current.toString()) > 0) {
-            shouldBeCompletedIn.add(current);
+        for (HabitDate date : datesRecorded) {
+            if (habitWeekdays.contains(date.getWeekday()) && dateComparator.compare(originalDate, date) >= 0)
+                shouldBeCompletedIn.add(date);
         }
 
         final Set<HabitDate> wasCompletedIn = new HashSet<>();
-
         for (Completion completion : completions) {
-            final HabitDate date = completion.getDate();
-
-            if (habitWeekdays.contains(date.getWeekday()) &&
-                    originalDate.toString().compareTo(current.toString()) > 0)
-                shouldBeCompletedIn.add(date);
-
             if (completion.getHabit().equals(habit))
-                wasCompletedIn.add(date);
+                wasCompletedIn.add(completion.getDate());
         }
 
         shouldBeCompletedIn.retainAll(wasCompletedIn);
@@ -274,40 +287,6 @@ public class DefaultCalendarManager implements CalendarManager {
             context.deleteFile(completionFilename);
             throw new RuntimeException("File " + completionFilename + " was corrupted and was deleted");
         }
-    }
-
-
-    private void loadDataFromFile() {
-        File habitFile = null;
-        File completionFile = null;
-//            Gson gson = new Gson();
-//
-//            habitFile = context.getFileStreamPath(habitFilename);
-//            if (habitFile != null && habitFile.exists()) {
-//                FileInputStream habitFis = context.openFileInput(habitFilename);
-//                BufferedReader habitIn = new BufferedReader(new InputStreamReader(habitFis));
-//                Type habitType = new TypeToken<Set<Habit>>() {
-//                }.getType();
-//                habits.addAll(gson.<Set<Habit>>fromJson(habitIn, habitType));
-//            }
-
-//            completionFile = context.getFileStreamPath(completionFilename);
-//            if (completionFile != null && completionFile.exists()) {
-//                FileInputStream completionFis = context.openFileInput(completionFilename);
-//                BufferedReader completionIn = new BufferedReader(new InputStreamReader(completionFis));
-//                Type completionType = new TypeToken<List<Completion>>() {
-//                }.getType();
-//                List<Completion> completionsFromFile = gson.<List<Completion>>fromJson(completionIn, completionType);
-//                completions.addAll(completionsFromFile);
-//                for (Completion completion : completions)
-//                    datesRecorded.add(completion.getDate());
-//            }
-//
-//            if (habitFile != null)
-//                habitFile.delete();
-//            if (completionFile != null)
-//                completionFile.delete();
-//            throw new RuntimeException("Persistence file(s) corrupted. They were deleted");
     }
 
     private void saveHabits() {
