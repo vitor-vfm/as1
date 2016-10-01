@@ -249,7 +249,7 @@ public class DefaultCalendarManager implements CalendarManager {
         }
     }
 
-    private void loadDataFromHabitsFile() {
+    protected void loadDataFromHabitsFile() {
         Gson gson = new Gson();
 
         try {
@@ -268,7 +268,7 @@ public class DefaultCalendarManager implements CalendarManager {
         }
     }
 
-    private void loadDataFromCompletionsFile() {
+    protected void loadDataFromCompletionsFile() {
         Gson gson = new Gson();
         try {
             FileInputStream completionFis = context.openFileInput(completionFilename);
@@ -289,7 +289,7 @@ public class DefaultCalendarManager implements CalendarManager {
         }
     }
 
-    private void saveHabits() {
+    protected void saveHabits() {
         try {
             FileOutputStream fos = context.openFileOutput(habitFilename, 0);
             OutputStreamWriter writer = new OutputStreamWriter(fos);
@@ -303,7 +303,7 @@ public class DefaultCalendarManager implements CalendarManager {
         }
     }
 
-    private void saveCompletions() {
+    protected void saveCompletions() {
         try {
             FileOutputStream fos = context.openFileOutput(completionFilename, 0);
             OutputStreamWriter writer = new OutputStreamWriter(fos);
