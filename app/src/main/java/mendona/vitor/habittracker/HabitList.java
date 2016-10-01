@@ -14,8 +14,10 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -23,6 +25,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -48,6 +51,10 @@ public class HabitList extends Activity {
         calendarManager = new DefaultCalendarManager(this, currentDate, HABIT_FILENAME, COMPLETION_FILENAME);
         habitsOnScreen = new ArrayList<>();
         adapter = new HabitsOnScreenAdapter(this, habitsOnScreen);
+
+        final TextView todayDateView = (TextView) findViewById(R.id.today_date_view);
+        final SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
+        todayDateView.setText(dateFormat.format(currentDate));
 
         final ListView habitListView = (ListView) findViewById(R.id.habit_list);
         habitListView.setAdapter(adapter);
