@@ -2,6 +2,8 @@ package mendona.vitor.habittracker;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Locale;
 
 /**
  * Created by vitor on 19/09/16.
@@ -22,8 +24,9 @@ public enum Weekday {
     }
 
     public static Weekday fromDate(final Date date) {
-        Calendar.getInstance().setTime(date);
-        final int toFind = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
+        final Calendar calendar = new GregorianCalendar(Locale.getDefault());
+        calendar.setTime(date);
+        final int toFind = calendar.get(Calendar.DAY_OF_WEEK);
         for (Weekday weekday : Weekday.values())
             if (weekday.day == toFind)
                 return weekday;
