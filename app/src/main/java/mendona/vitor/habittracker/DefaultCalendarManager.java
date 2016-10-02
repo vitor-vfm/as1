@@ -16,7 +16,10 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 /**
- * Created by vitor on 15/09/16.
+ * A default implementation for CalendarManager. On construction it stores
+ * filenames to be used for persistence
+ *
+ * It includes a couple of caches to avoid recomputation.
  */
 public class DefaultCalendarManager implements CalendarManager {
 

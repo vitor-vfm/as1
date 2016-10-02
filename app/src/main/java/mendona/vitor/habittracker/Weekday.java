@@ -6,7 +6,7 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 
 /**
- * Created by vitor on 19/09/16.
+ * Enum that represents a day in the week, to be associated with habits and dates
  */
 public enum Weekday {
     SUNDAY(Calendar.SUNDAY),

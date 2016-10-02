@@ -10,7 +10,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 /**
- * Created by vitor on 26/09/16.
+ * A custom adapter to display the habits for the day
  */
 public class HabitsOnScreenAdapter extends ArrayAdapter<HabitOnScreen> {
 

@@ -7,10 +7,16 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
+/**
+ * The main data class. Represents a habit, including its name, its start date,
+ * and what week days it should be completed in.
+ *
+ * The name is a key. Users of this class should make sure no two habits have the same name.
+ *
+ * It's meant to be immutable. Getters should return copies to avoid mutation of its fields.
+ */
 
 public class Habit {
-
-    // Represents a habit. This class should be immutable
 
     private final String name;
     private final HabitDate originalDate;

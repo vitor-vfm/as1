@@ -5,7 +5,11 @@ import java.util.Date;
 import java.util.Locale;
 
 /**
- * Created by vitor on 29/09/16.
+ * A custom date object. It wraps a regular Date with it corresponding day of the week
+ * and a string representation. Any time a date is used by the application model, this
+ * should be used.
+ *
+ * It's meant to be immutable. Getters should return copies to avoid mutation of its fields.
  */
 public class HabitDate {
 

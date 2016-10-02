@@ -6,7 +6,10 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Created by vitor on 15/09/16.
+ * Main controller. Updates to the model should happen through an instance
+ * of this interface. The Activities should not modify the model directly.
+ *
+ * Only one instance per application should  exist.
  */
 public interface CalendarManager {
 

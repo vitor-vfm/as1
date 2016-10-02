@@ -2,10 +2,13 @@ package mendona.vitor.habittracker;
 
 import java.security.InvalidParameterException;
 import java.util.Date;
-
 /**
- * Created by vitor on 15/09/16.
+ * Stores information about a completion event. Includes the corresponding habit
+ * and the date where it was completed.
+ *
+ * It's meant to be immutable.
  */
+
 public class Completion {
     private Habit habit;
     private HabitDate date;

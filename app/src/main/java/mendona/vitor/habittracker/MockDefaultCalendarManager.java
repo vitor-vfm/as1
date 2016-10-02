@@ -3,7 +3,8 @@ package mendona.vitor.habittracker;
 import java.util.Calendar;
 
 /**
- * Created by vitor on 29/09/16.
+ * A subclass of DefaultCalendarManager that removes all I/O side effects,
+ * to be used for unit tests
  */
 public class MockDefaultCalendarManager extends DefaultCalendarManager {
 

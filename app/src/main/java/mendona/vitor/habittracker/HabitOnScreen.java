@@ -1,7 +1,9 @@
 package mendona.vitor.habittracker;
 
 /**
- * Created by vitor on 26/09/16.
+ * Used by the main activity to display the habits for the day.
+ * Represents a habit and how many times it has been completed in the day.
+ * Includes its own layout
  */
 public class HabitOnScreen implements Comparable<HabitOnScreen> {
     // Represents a habit as it appears on screen

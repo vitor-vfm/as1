@@ -11,9 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Created by vitor on 29/09/16.
- */
 public class DefaultCalendarManagerTest extends TestCase {
 
     final Set<Weekday> testWeekdays1 = new HashSet<>(Arrays.asList(Weekday.FRIDAY, Weekday.MONDAY, Weekday.THURSDAY));

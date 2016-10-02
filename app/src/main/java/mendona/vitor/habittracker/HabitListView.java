@@ -29,7 +29,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-public class HabitList extends Activity {
+public class HabitListView extends Activity {
 
     protected CalendarManager calendarManager;
     private Calendar calendar;
@@ -61,7 +61,7 @@ public class HabitList extends Activity {
         habitListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
-                AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(HabitList.this);
+                AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(HabitListView.this);
                 dialogBuilder.setTitle(R.string.complete_habit_dialog_title);
                 dialogBuilder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                     @Override
@@ -89,7 +89,7 @@ public class HabitList extends Activity {
             @Override
             public void onClick(View v) {
                 final LayoutInflater inflater = getLayoutInflater();
-                final AlertDialog.Builder builder = new AlertDialog.Builder(HabitList.this);
+                final AlertDialog.Builder builder = new AlertDialog.Builder(HabitListView.this);
                 final View dialogView = inflater.inflate(R.layout.add_habit_dialog, null);
                 final EditText nameView = (EditText) dialogView.findViewById(R.id.add_habit_name);
 
@@ -98,7 +98,7 @@ public class HabitList extends Activity {
                 chooseDateButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        final DatePickerDialog datePickerDialog = new DatePickerDialog(HabitList.this, new DatePickerDialog.OnDateSetListener() {
+                        final DatePickerDialog datePickerDialog = new DatePickerDialog(HabitListView.this, new DatePickerDialog.OnDateSetListener() {
                             @Override
                             public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
                                 calendar.set(year, monthOfYear, dayOfMonth);
@@ -117,7 +117,7 @@ public class HabitList extends Activity {
                         final Habit newHabit = createHabit(nameView.getText().toString(), calendar.getTime(), weekdaysView.getText().toString());
                         final boolean ok = calendarManager.addHabit(newHabit);
                         if (!ok)
-                            Toast.makeText(HabitList.this, R.string.invalid_habit, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(HabitListView.this, R.string.invalid_habit, Toast.LENGTH_SHORT).show();
                         else {
                             dialog.dismiss();
                             reloadHabitsOnScreen();
@@ -137,10 +137,10 @@ public class HabitList extends Activity {
                 for (Habit habit : calendarManager.getAllHabits()) {
                     habitsToShow.add(habit.getName());
                 }
-                final ArrayAdapter<String> habitsToShowAdapter = new ArrayAdapter<String>(HabitList.this,
+                final ArrayAdapter<String> habitsToShowAdapter = new ArrayAdapter<String>(HabitListView.this,
                         android.R.layout.test_list_item, habitsToShow);
 
-                final AlertDialog.Builder chooseHabitsBuilder = new AlertDialog.Builder(HabitList.this);
+                final AlertDialog.Builder chooseHabitsBuilder = new AlertDialog.Builder(HabitListView.this);
                 chooseHabitsBuilder.setTitle(R.string.choose_habit_to_see_completions);
                 chooseHabitsBuilder.setSingleChoiceItems(habitsToShowAdapter, -1, new DialogInterface.OnClickListener() {
                     @Override
@@ -148,16 +148,16 @@ public class HabitList extends Activity {
                         String habitName = habitsToShowAdapter.getItem(which);
 
                         final List<Completion> completionsForHabit = calendarManager.getCompletionsForHabit(habitName);
-                        final ArrayAdapter<Completion> completionsAdapter = new ArrayAdapter<Completion>(HabitList.this,
+                        final ArrayAdapter<Completion> completionsAdapter = new ArrayAdapter<Completion>(HabitListView.this,
                                 android.R.layout.test_list_item, completionsForHabit);
 
-                        AlertDialog.Builder displayCompletionsDialogBuilder = new AlertDialog.Builder(HabitList.this);
+                        AlertDialog.Builder displayCompletionsDialogBuilder = new AlertDialog.Builder(HabitListView.this);
                         displayCompletionsDialogBuilder.setTitle(R.string.see_completions_title);
                         displayCompletionsDialogBuilder.setAdapter(completionsAdapter, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 final Completion toDelete = completionsAdapter.getItem(which);
-                                final AlertDialog.Builder confirmation = new AlertDialog.Builder(HabitList.this);
+                                final AlertDialog.Builder confirmation = new AlertDialog.Builder(HabitListView.this);
                                 confirmation.setMessage(R.string.delete_completion_confirm);
                                 confirmation.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                                     @Override
@@ -204,15 +204,15 @@ public class HabitList extends Activity {
                 for (Habit habit : calendarManager.getAllHabits()) {
                     habitsToDelete.add(habit.getName());
                 }
-                final ArrayAdapter<String> habitsToDeleteAdapter = new ArrayAdapter<String>(HabitList.this,
+                final ArrayAdapter<String> habitsToDeleteAdapter = new ArrayAdapter<String>(HabitListView.this,
                         android.R.layout.test_list_item, habitsToDelete);
 
-                final AlertDialog.Builder builder = new AlertDialog.Builder(HabitList.this);
+                final AlertDialog.Builder builder = new AlertDialog.Builder(HabitListView.this);
                 builder.setTitle(R.string.choose_habit);
                 builder.setSingleChoiceItems(habitsToDeleteAdapter, -1, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        AlertDialog.Builder confirmationBuilder = new AlertDialog.Builder(HabitList.this);
+                        AlertDialog.Builder confirmationBuilder = new AlertDialog.Builder(HabitListView.this);
                         final Habit toDelete = calendarManager.getHabitByName(habitsToDeleteAdapter.getItem(which));
                         confirmationBuilder.setMessage(R.string.delete_habit_confirm);
                         confirmationBuilder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
@@ -254,10 +254,10 @@ public class HabitList extends Activity {
                     habitNames.add(habit.getName());
                 }
 
-                final ArrayAdapter<String> habitNamesAdapter = new ArrayAdapter<String>(HabitList.this,
+                final ArrayAdapter<String> habitNamesAdapter = new ArrayAdapter<String>(HabitListView.this,
                         android.R.layout.simple_list_item_1, habitNames);
 
-                final AlertDialog.Builder habitsDialog = new AlertDialog.Builder(HabitList.this);
+                final AlertDialog.Builder habitsDialog = new AlertDialog.Builder(HabitListView.this);
                 habitsDialog.setAdapter(habitNamesAdapter, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -266,7 +266,7 @@ public class HabitList extends Activity {
                         final int timesCompleted = calendarManager.getCompletionsForHabit(habitToShowStats.getName()).size();
                         final String displayMessage = getString(R.string.times_habit_completed) + timesCompleted + "\n" +
                                 getString(R.string.times_habit_fulfilled) + timesFulfilled;
-                        final AlertDialog.Builder statsDialog = new AlertDialog.Builder(HabitList.this);
+                        final AlertDialog.Builder statsDialog = new AlertDialog.Builder(HabitListView.this);
                         statsDialog.setMessage(displayMessage);
                         statsDialog.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                             @Override
